@@ -1,4 +1,7 @@
 package com.imageprocessing.dto;
 
-public class BrightnessRequest {
+public record BrightnessRequest(
+        String imageId,
+        int brightness
+) {
 }
