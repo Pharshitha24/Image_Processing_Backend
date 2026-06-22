@@ -23,7 +23,12 @@ public class PixelUtil {
         g = clamp(g);
         b = clamp(b);
 
-        return (r << 16) | (g << 8) | b;
+        int a = 255;
+
+        return (a << 24)
+                | (r << 16)
+                | (g << 8)
+                | b;
     }
 
     public static int clamp(int value) {

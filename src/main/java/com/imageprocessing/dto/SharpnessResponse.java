@@ -1,6 +1,6 @@
 package com.imageprocessing.dto;
 
-public record BrightnessResponse(
+public record SharpnessResponse(
         String imageId,
         int width,
         int height,

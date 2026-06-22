@@ -1,8 +1,6 @@
 package com.imageprocessing.service;
 
-import com.imageprocessing.dto.BrightnessRequest;
-import com.imageprocessing.dto.BrightnessResponse;
-import com.imageprocessing.dto.UploadResponse;
+import com.imageprocessing.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -13,11 +11,23 @@ public interface ImageService {
             MultipartFile file)
             throws IOException;
 
-    BrightnessRequest adjustBrightness(
-            String imageId,
-            int brightness);
 
     BrightnessResponse adjustBrightnessresponse(
-            @RequestBody BrightnessRequest request
+            String imageId,
+            int brightness
     );
+
+    ContrastResponse adjustContrastresponse(
+            String imageId,
+            double contrast);
+
+    BlurResponse blurImageresponse(
+            String imageId,
+            int kernelSize);
+
+    SharpnessResponse enhanceSharpness(
+            String imageId,
+            double factor);
+
+
 }
