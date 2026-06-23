@@ -44,14 +44,13 @@ public class ImageController {
 
     @PostMapping("/{imageId}/brightness")
     public BrightnessResponse adjustBrightnessresponse(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("imageId") String imageId,
-            @RequestParam("brightness") int brightness) {
+            @PathVariable String imageId,
+            @RequestParam int brightness) {
+
         return imageService.adjustBrightnessresponse(
                 imageId,
                 brightness
         );
-//        return "Brightness adjusted successfully";
     }
 
     @GetMapping("/image/{imageId}")
@@ -104,6 +103,79 @@ public class ImageController {
         return imageService.enhanceSharpness(
                 imageId,
                 factor
+        );
+    }
+
+    @PostMapping("/{imageId}/rotate")
+    public RotateResponse rotateImage(
+            @PathVariable String imageId,
+            @RequestParam int angle) {
+
+        return imageService.rotateImage(
+                imageId,
+                angle
+        );
+    }
+
+    @PostMapping("/{imageId}/flip")
+    public FlipResponse flipImage(
+            @PathVariable String imageId,
+            @RequestParam String direction) {
+
+        return imageService.flipImage(
+                imageId,
+                direction
+        );
+    }
+
+    @PostMapping("/{imageId}/background-remove")
+    public BackgroundRemovalResponse removeBackground(
+            @PathVariable String imageId,
+            @RequestParam int threshold) {
+
+        return imageService.removeBackground(
+                imageId,
+                threshold);
+    }
+
+    @PostMapping("/{imageId}/grayscale")
+    public GrayscaleResponse convertToGrayscale(
+            @PathVariable String imageId) {
+
+        return imageService.convertToGrayscale(
+                imageId);
+    }
+
+    @PostMapping("/{imageId}/shape-detection")
+    public ShapeDetectionResponse detectShape(
+            @PathVariable String imageId) {
+
+        return imageService.detectShape(
+                imageId);
+    }
+
+    @PostMapping("/{imageId}/zoom")
+    public ZoomResponse zoomImage(
+            @PathVariable String imageId,
+            @RequestParam double factor) {
+
+        return imageService.zoomImage(
+                imageId,
+                factor);
+    }
+
+    @PostMapping("/layer")
+    public LayerResponse layerImages(
+            @RequestParam String backgroundImageId,
+            @RequestParam String foregroundImageId,
+            @RequestParam int xOffset,
+            @RequestParam int yOffset) {
+
+        return imageService.layerImages(
+                backgroundImageId,
+                foregroundImageId,
+                xOffset,
+                yOffset
         );
     }
 

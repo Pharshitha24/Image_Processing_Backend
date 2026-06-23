@@ -13,30 +13,56 @@ public class ImageStore {
     private final Map<String, BufferedImage> images =
             new ConcurrentHashMap<>();
 
-    public String save(BufferedImage image) {
+    private final Map<String, String> parentImages =
+            new ConcurrentHashMap<>();
+
+    public String save(
+            BufferedImage image) {
 
         String imageId =
                 UUID.randomUUID().toString();
 
-        images.put(imageId, image);
+        images.put(
+                imageId,
+                image);
 
         return imageId;
     }
 
-    public BufferedImage get(String imageId) {
+    public String saveProcessedImage(
+            String parentImageId,
+            BufferedImage image) {
+
+        String newImageId =
+                UUID.randomUUID().toString();
+
+        images.put(
+                newImageId,
+                image);
+
+        parentImages.put(
+                newImageId,
+                parentImageId);
+
+        return newImageId;
+    }
+
+    public BufferedImage get(
+            String imageId) {
 
         return images.get(imageId);
     }
 
-    public void update(
-            String imageId,
-            BufferedImage image) {
+    public String getParentImageId(
+            String imageId) {
 
-        images.put(imageId, image);
+        return parentImages.get(imageId);
     }
 
-    public void delete(String imageId) {
+    public void delete(
+            String imageId) {
 
         images.remove(imageId);
+        parentImages.remove(imageId);
     }
 }

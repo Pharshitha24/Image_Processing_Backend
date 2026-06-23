@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+
 @Service
 public class ImageServiceImpl implements ImageService {
 
@@ -53,6 +54,12 @@ public class ImageServiceImpl implements ImageService {
         int width = image.getWidth();
         int height = image.getHeight();
 
+        BufferedImage processedImage =
+                new BufferedImage(
+                        width,
+                        height,
+                        BufferedImage.TYPE_INT_ARGB);
+
         int totalPixels = width * height;
 
         for (int index = 0;
@@ -72,28 +79,40 @@ public class ImageServiceImpl implements ImageService {
             int rgb =
                     image.getRGB(x, y);
 
-            int r = PixelUtil.red(rgb);
-            int g = PixelUtil.green(rgb);
-            int b = PixelUtil.blue(rgb);
+            int r =
+                    PixelUtil.red(rgb);
+
+            int g =
+                    PixelUtil.green(rgb);
+
+            int b =
+                    PixelUtil.blue(rgb);
 
             r += brightness;
             g += brightness;
             b += brightness;
 
             int newRgb =
-                    PixelUtil.rgb(r, g, b);
+                    PixelUtil.rgb(
+                            r,
+                            g,
+                            b);
 
-            image.setRGB(x, y, newRgb);
+            processedImage.setRGB(
+                    x,
+                    y,
+                    newRgb);
         }
 
-        imageStore.update(
-                imageId,
-                image);
+        String newImageId =
+                imageStore.saveProcessedImage(
+                        imageId,
+                        processedImage);
 
         return new BrightnessResponse(
-                imageId,
-                image.getWidth(),
-                image.getHeight(),
+                newImageId,
+                width,
+                height,
                 "Brightness adjusted successfully"
         );
     }
@@ -113,6 +132,12 @@ public class ImageServiceImpl implements ImageService {
 
         int width = image.getWidth();
         int height = image.getHeight();
+
+        BufferedImage processedImage =
+                new BufferedImage(
+                        width,
+                        height,
+                        BufferedImage.TYPE_INT_ARGB);
 
         int totalPixels =
                 width * height;
@@ -153,18 +178,19 @@ public class ImageServiceImpl implements ImageService {
                             g,
                             b);
 
-            image.setRGB(
+            processedImage.setRGB(
                     x,
                     y,
                     newRgb);
         }
 
-        imageStore.update(
-                imageId,
-                image);
+        String newImageId =
+                imageStore.saveProcessedImage(
+                        imageId,
+                        processedImage);
 
         return new ContrastResponse(
-                imageId,
+                newImageId,
                 width,
                 height,
                 "Contrast adjusted successfully"
@@ -195,11 +221,8 @@ public class ImageServiceImpl implements ImageService {
                         height,
                         BufferedImage.TYPE_INT_ARGB);
 
-        int kernelsize =
-                kernelSize;
-
         int radius =
-                kernelsize / 2;
+                kernelSize / 2;
 
         for (int y = 0; y < height; y++) {
 
@@ -267,12 +290,13 @@ public class ImageServiceImpl implements ImageService {
             }
         }
 
-        imageStore.update(
-                imageId,
-                blurredImage);
+        String newImageId =
+                imageStore.saveProcessedImage(
+                        imageId,
+                        blurredImage);
 
         return new BlurResponse(
-                imageId,
+                newImageId,
                 width,
                 height,
                 "Blur applied successfully"
@@ -378,15 +402,684 @@ public class ImageServiceImpl implements ImageService {
             }
         }
 
-        imageStore.update(
-                imageId,
-                sharpenedImage);
+        String newImageId =
+                imageStore.saveProcessedImage(
+                        imageId,
+                        sharpenedImage);
 
         return new SharpnessResponse(
-                imageId,
+                newImageId,
                 width,
                 height,
                 "Sharpness enhanced successfully"
+        );
+    }
+
+    @Override
+    public RotateResponse rotateImage(
+            String imageId,
+            int angle) {
+
+        BufferedImage image =
+                imageStore.get(imageId);
+
+        if (image == null) {
+            throw new RuntimeException(
+                    "Image not found");
+        }
+
+        int width =
+                image.getWidth();
+
+        int height =
+                image.getHeight();
+
+        BufferedImage rotatedImage;
+
+        if (angle == 90) {
+
+            rotatedImage =
+                    new BufferedImage(
+                            height,
+                            width,
+                            BufferedImage.TYPE_INT_ARGB);
+
+            for (int y = 0; y < height; y++) {
+
+                for (int x = 0; x < width; x++) {
+
+                    rotatedImage.setRGB(
+                            y,
+                            width - 1 - x,
+                            image.getRGB(x, y));
+                }
+            }
+
+        }
+        else if (angle == 180) {
+
+            rotatedImage =
+                    new BufferedImage(
+                            width,
+                            height,
+                            BufferedImage.TYPE_INT_ARGB);
+
+            for (int y = 0; y < height; y++) {
+
+                for (int x = 0; x < width; x++) {
+
+                    rotatedImage.setRGB(
+                            width - 1 - x,
+                            height - 1 - y,
+                            image.getRGB(x, y));
+                }
+            }
+
+        }
+        else if (angle == 270) {
+
+            rotatedImage =
+                    new BufferedImage(
+                            height,
+                            width,
+                            BufferedImage.TYPE_INT_ARGB);
+
+            for (int y = 0; y < height; y++) {
+
+                for (int x = 0; x < width; x++) {
+
+                    rotatedImage.setRGB(
+                            height - 1 - y,
+                            x,
+                            image.getRGB(x, y));
+                }
+            }
+
+        } else {
+
+            throw new RuntimeException(
+                    "Only 90, 180 and 270 rotations are supported");
+        }
+
+        String newImageId =
+                imageStore.saveProcessedImage(
+                        imageId,
+                        rotatedImage);
+
+        return new RotateResponse(
+                newImageId,
+                rotatedImage.getWidth(),
+                rotatedImage.getHeight(),
+                "Image rotated successfully"
+        );
+    }
+
+    @Override
+    public FlipResponse flipImage(
+            String imageId,
+            String direction) {
+
+        BufferedImage image =
+                imageStore.get(imageId);
+
+        if (image == null) {
+            throw new RuntimeException(
+                    "Image not found");
+        }
+
+        int width =
+                image.getWidth();
+
+        int height =
+                image.getHeight();
+
+        BufferedImage flippedImage =
+                new BufferedImage(
+                        width,
+                        height,
+                        BufferedImage.TYPE_INT_ARGB);
+
+        if ("horizontal".equalsIgnoreCase(direction)) {
+
+            for (int y = 0;
+                 y < height;
+                 y++) {
+
+                for (int x = 0;
+                     x < width;
+                     x++) {
+
+                    int rgb =
+                            image.getRGB(x, y);
+
+                    flippedImage.setRGB(
+                            width - 1 - x,
+                            y,
+                            rgb);
+                }
+            }
+
+        }
+        else if ("vertical".equalsIgnoreCase(direction)) {
+
+            for (int y = 0;
+                 y < height;
+                 y++) {
+
+                for (int x = 0;
+                     x < width;
+                     x++) {
+
+                    int rgb =
+                            image.getRGB(x, y);
+
+                    flippedImage.setRGB(
+                            x,
+                            height - 1 - y,
+                            rgb);
+                }
+            }
+
+        }
+        else {
+
+            throw new RuntimeException(
+                    "Direction must be horizontal or vertical");
+        }
+
+        String newImageId =
+                imageStore.saveProcessedImage(
+                        imageId,
+                        flippedImage);
+
+        return new FlipResponse(
+                newImageId,
+                width,
+                height,
+                "Image flipped successfully"
+        );
+    }
+
+    @Override
+    public BackgroundRemovalResponse removeBackground(
+            String imageId,
+            int threshold) {
+
+        BufferedImage inputImage =
+                imageStore.get(imageId);
+
+        if (inputImage == null) {
+            throw new RuntimeException(
+                    "Image not found");
+        }
+
+        int width =
+                inputImage.getWidth();
+
+        int height =
+                inputImage.getHeight();
+
+        BufferedImage outputImage =
+                new BufferedImage(
+                        width,
+                        height,
+                        BufferedImage.TYPE_INT_ARGB);
+
+        int backgroundRGB =
+                inputImage.getRGB(0, 0);
+
+        int bgRed =
+                PixelUtil.red(backgroundRGB);
+
+        int bgGreen =
+                PixelUtil.green(backgroundRGB);
+
+        int bgBlue =
+                PixelUtil.blue(backgroundRGB);
+
+        int totalPixels =
+                width * height;
+
+        for (int index = 0;
+             index < totalPixels;
+             index++) {
+
+            int x =
+                    LinearIndexUtil.getX(
+                            index,
+                            width);
+
+            int y =
+                    LinearIndexUtil.getY(
+                            index,
+                            width);
+
+            int rgb =
+                    inputImage.getRGB(
+                            x,
+                            y);
+
+            int red =
+                    PixelUtil.red(rgb);
+
+            int green =
+                    PixelUtil.green(rgb);
+
+            int blue =
+                    PixelUtil.blue(rgb);
+
+            int colorDifference =
+                    Math.abs(red - bgRed)
+                            +
+                            Math.abs(green - bgGreen)
+                            +
+                            Math.abs(blue - bgBlue);
+
+            if (colorDifference <= threshold) {
+
+                outputImage.setRGB(
+                        x,
+                        y,
+                        0x00000000);
+
+            } else {
+
+                outputImage.setRGB(
+                        x,
+                        y,
+                        rgb);
+            }
+        }
+
+        String newImageId =
+                imageStore.saveProcessedImage(
+                        imageId,
+                        outputImage);
+
+        return new BackgroundRemovalResponse(
+                newImageId,
+                width,
+                height,
+                "Background removed successfully"
+        );
+    }
+
+    @Override
+    public GrayscaleResponse convertToGrayscale(
+            String imageId) {
+
+        BufferedImage image =
+                imageStore.get(imageId);
+
+        if (image == null) {
+            throw new RuntimeException(
+                    "Image not found");
+        }
+
+        int width =
+                image.getWidth();
+
+        int height =
+                image.getHeight();
+
+        BufferedImage grayscaleImage =
+                new BufferedImage(
+                        width,
+                        height,
+                        BufferedImage.TYPE_INT_ARGB);
+
+        int totalPixels =
+                width * height;
+
+        for (int index = 0;
+             index < totalPixels;
+             index++) {
+
+            int x =
+                    LinearIndexUtil.getX(
+                            index,
+                            width);
+
+            int y =
+                    LinearIndexUtil.getY(
+                            index,
+                            width);
+
+            int rgb =
+                    image.getRGB(
+                            x,
+                            y);
+
+            int r =
+                    PixelUtil.red(rgb);
+
+            int g =
+                    PixelUtil.green(rgb);
+
+            int b =
+                    PixelUtil.blue(rgb);
+
+            int gray =
+                    (r + g + b) / 3;
+
+            int newRgb =
+                    PixelUtil.rgb(
+                            gray,
+                            gray,
+                            gray);
+
+            grayscaleImage.setRGB(
+                    x,
+                    y,
+                    newRgb);
+        }
+
+        String newImageId =
+                imageStore.saveProcessedImage(
+                        imageId,
+                        grayscaleImage);
+
+        return new GrayscaleResponse(
+                newImageId,
+                width,
+                height,
+                "Converted to grayscale successfully"
+        );
+    }
+
+    @Override
+    public ShapeDetectionResponse detectShape(
+            String imageId) {
+
+        BufferedImage image =
+                imageStore.get(imageId);
+
+        if (image == null) {
+            throw new RuntimeException(
+                    "Image not found");
+        }
+
+        int width =
+                image.getWidth();
+
+        int height =
+                image.getHeight();
+
+        int minX = width;
+        int minY = height;
+        int maxX = 0;
+        int maxY = 0;
+
+        boolean foundShape = false;
+
+        for (int y = 0;
+             y < height;
+             y++) {
+
+            for (int x = 0;
+                 x < width;
+                 x++) {
+
+                int rgb =
+                        image.getRGB(x, y);
+
+                int r =
+                        PixelUtil.red(rgb);
+
+                int g =
+                        PixelUtil.green(rgb);
+
+                int b =
+                        PixelUtil.blue(rgb);
+
+                int brightness =
+                        (r + g + b) / 3;
+
+                if (brightness < 128) {
+
+                    foundShape = true;
+
+                    minX =
+                            Math.min(minX, x);
+
+                    minY =
+                            Math.min(minY, y);
+
+                    maxX =
+                            Math.max(maxX, x);
+
+                    maxY =
+                            Math.max(maxY, y);
+                }
+            }
+        }
+
+        if (!foundShape) {
+
+            return new ShapeDetectionResponse(
+                    imageId,
+                    "No Shape Found",
+                    width,
+                    height,
+                    "No detectable shape present");
+        }
+
+        int shapeWidth =
+                maxX - minX + 1;
+
+        int shapeHeight =
+                maxY - minY + 1;
+
+        String detectedShape;
+
+        double ratio =
+                (double) shapeWidth /
+                        shapeHeight;
+
+        if (ratio > 0.9 &&
+                ratio < 1.1) {
+
+            detectedShape =
+                    "Square";
+
+        } else {
+
+            detectedShape =
+                    "Rectangle";
+        }
+
+        return new ShapeDetectionResponse(
+                imageId,
+                detectedShape,
+                width,
+                height,
+                "Shape detected successfully");
+    }
+
+    @Override
+    public ZoomResponse zoomImage(
+            String imageId,
+            double factor) {
+
+        BufferedImage image =
+                imageStore.get(imageId);
+
+        if (image == null) {
+            throw new RuntimeException(
+                    "Image not found");
+        }
+
+        if (factor <= 0) {
+            throw new RuntimeException(
+                    "Zoom factor must be greater than 0");
+        }
+
+        int oldWidth =
+                image.getWidth();
+
+        int oldHeight =
+                image.getHeight();
+
+        int newWidth =
+                (int) (oldWidth * factor);
+
+        int newHeight =
+                (int) (oldHeight * factor);
+
+        BufferedImage zoomedImage =
+                new BufferedImage(
+                        newWidth,
+                        newHeight,
+                        BufferedImage.TYPE_INT_ARGB);
+
+        for (int y = 0;
+             y < newHeight;
+             y++) {
+
+            for (int x = 0;
+                 x < newWidth;
+                 x++) {
+
+                int sourceX =
+                        (int) (x / factor);
+
+                int sourceY =
+                        (int) (y / factor);
+
+                sourceX =
+                        Math.min(
+                                sourceX,
+                                oldWidth - 1);
+
+                sourceY =
+                        Math.min(
+                                sourceY,
+                                oldHeight - 1);
+
+                zoomedImage.setRGB(
+                        x,
+                        y,
+                        image.getRGB(
+                                sourceX,
+                                sourceY));
+            }
+        }
+
+        String newImageId =
+                imageStore.saveProcessedImage(
+                        imageId,
+                        zoomedImage);
+
+        return new ZoomResponse(
+                newImageId,
+                newWidth,
+                newHeight,
+                "Zoom applied successfully"
+        );
+    }
+
+    @Override
+    public LayerResponse layerImages(
+            String backgroundImageId,
+            String foregroundImageId,
+            int xOffset,
+            int yOffset) {
+
+        BufferedImage background =
+                imageStore.get(
+                        backgroundImageId);
+
+        BufferedImage foreground =
+                imageStore.get(
+                        foregroundImageId);
+
+        if (background == null) {
+            throw new RuntimeException(
+                    "Background image not found");
+        }
+
+        if (foreground == null) {
+            throw new RuntimeException(
+                    "Foreground image not found");
+        }
+
+        int width =
+                background.getWidth();
+
+        int height =
+                background.getHeight();
+
+        BufferedImage result =
+                new BufferedImage(
+                        width,
+                        height,
+                        BufferedImage.TYPE_INT_ARGB);
+
+        for (int y = 0;
+             y < height;
+             y++) {
+
+            for (int x = 0;
+                 x < width;
+                 x++) {
+
+                result.setRGB(
+                        x,
+                        y,
+                        background.getRGB(
+                                x,
+                                y));
+            }
+        }
+
+        for (int y = 0;
+             y < foreground.getHeight();
+             y++) {
+
+            for (int x = 0;
+                 x < foreground.getWidth();
+                 x++) {
+
+                int targetX =
+                        x + xOffset;
+
+                int targetY =
+                        y + yOffset;
+
+                if (targetX >= 0 &&
+                        targetX < width &&
+                        targetY >= 0 &&
+                        targetY < height) {
+
+                    int rgb =
+                            foreground.getRGB(
+                                    x,
+                                    y);
+
+                    int alpha =
+                            (rgb >> 24) & 0xFF;
+
+                    if (alpha > 0) {
+
+                        result.setRGB(
+                                targetX,
+                                targetY,
+                                rgb);
+                    }
+                }
+            }
+        }
+
+        String newImageId =
+                imageStore.saveProcessedImage(
+                        backgroundImageId,
+                        result);
+
+        return new LayerResponse(
+                newImageId,
+                width,
+                height,
+                "Images layered successfully"
         );
     }
 
