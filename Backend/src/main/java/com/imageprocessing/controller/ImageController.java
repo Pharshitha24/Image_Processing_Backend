@@ -47,25 +47,24 @@ public class ImageController {
 
     @PostMapping("/{imageId}/brightness")
     public BrightnessResponse adjustBrightnessresponse(
-            @PathVariable String imageId,
-            @RequestParam int brightness) {
+            @PathVariable("imageId") String imageId,
+            @RequestParam("brightness") int brightness) {
 
         return imageService.adjustBrightnessresponse(
                 imageId,
                 brightness
         );
+
     }
 
     @GetMapping("/image/{imageId}")
     public ResponseEntity<byte[]> getImage(
-            @PathVariable String imageId)
+            @PathVariable("imageId") String imageId)
             throws IOException {
 
-        BufferedImage image =
-                imageStore.get(imageId);
+        BufferedImage image = imageStore.get(imageId);
 
         if (image == null) {
-
             throw new RuntimeException(
                     "Image not found: " + imageId);
         }
@@ -73,116 +72,131 @@ public class ImageController {
         ByteArrayOutputStream baos =
                 new ByteArrayOutputStream();
 
-        ImageIO.write(
-                image,
-                "png",
-                baos);
+        ImageIO.write(image, "png", baos);
 
         return ResponseEntity.ok()
-                .contentType(
-                        MediaType.IMAGE_PNG)
-                .body(
-                        baos.toByteArray());
+                .contentType(MediaType.IMAGE_PNG)
+                .body(baos.toByteArray());
+
     }
 
     @PostMapping("/{imageId}/contrast")
     public ContrastResponse adjustContrastresponse(
-            @PathVariable String imageId,
-            @RequestParam double contrast) {
+            @PathVariable("imageId") String imageId,
+            @RequestParam("contrast") double contrast) {
 
         return imageService.adjustContrastresponse(
                 imageId,
                 contrast
         );
+
     }
 
     @PostMapping("/{imageId}/blur")
     public BlurResponse blurImageresponse(
-            @PathVariable String imageId,
-            @RequestParam int kernelsize) {
+            @PathVariable("imageId") String imageId,
+            @RequestParam("kernelsize") int kernelsize) {
 
         return imageService.blurImageresponse(
                 imageId,
                 kernelsize
         );
+
     }
 
     @PostMapping("/{imageId}/sharpness")
     public SharpnessResponse enhanceSharpness(
-            @PathVariable String imageId,
-            @RequestParam double factor) {
+            @PathVariable("imageId") String imageId,
+            @RequestParam("factor") double factor) {
 
         return imageService.enhanceSharpness(
                 imageId,
                 factor
         );
+
     }
 
     @PostMapping("/{imageId}/rotate")
     public RotateResponse rotateImage(
-            @PathVariable String imageId,
-            @RequestParam int angle) {
+            @PathVariable("imageId") String imageId,
+            @RequestParam("angle") int angle) {
 
         return imageService.rotateImage(
                 imageId,
                 angle
         );
+
     }
 
     @PostMapping("/{imageId}/flip")
     public FlipResponse flipImage(
-            @PathVariable String imageId,
-            @RequestParam String direction) {
+            @PathVariable("imageId") String imageId,
+            @RequestParam("direction") String direction) {
 
         return imageService.flipImage(
                 imageId,
                 direction
         );
+
     }
 
     @PostMapping("/{imageId}/background-remove")
     public BackgroundRemovalResponse removeBackground(
-            @PathVariable String imageId,
-            @RequestParam int threshold) {
+            @PathVariable("imageId") String imageId,
+            @RequestParam("threshold") int threshold) {
 
         return imageService.removeBackground(
                 imageId,
-                threshold);
+                threshold
+        );
+
     }
 
     @PostMapping("/{imageId}/grayscale")
     public GrayscaleResponse convertToGrayscale(
-            @PathVariable String imageId) {
+            @PathVariable("imageId") String imageId) {
 
         return imageService.convertToGrayscale(
-                imageId);
+                imageId
+        );
+
+
     }
 
     @PostMapping("/{imageId}/shape-detection")
     public ShapeDetectionResponse detectShape(
-            @PathVariable String imageId) {
+            @PathVariable("imageId") String imageId) {
+
 
         return imageService.detectShape(
-                imageId);
+                imageId
+        );
+
+
     }
 
     @PostMapping("/{imageId}/zoom")
     public ZoomResponse zoomImage(
-            @PathVariable String imageId,
-            @RequestParam double factor) {
+            @PathVariable("imageId") String imageId,
+            @RequestParam("factor") double factor) {
+
 
         return imageService.zoomImage(
                 imageId,
-                factor);
+                factor
+        );
+
+
     }
 
     @PostMapping("/layer")
     public LayerResponse layerImages(
-            @RequestParam String backgroundImageId,
-            @RequestParam MultipartFile foregroundFile,
-            @RequestParam int xOffset,
-            @RequestParam int yOffset)
+            @RequestParam("backgroundImageId") String backgroundImageId,
+            @RequestParam("foregroundFile") MultipartFile foregroundFile,
+            @RequestParam("xOffset") int xOffset,
+            @RequestParam("yOffset") int yOffset)
             throws IOException {
+
 
         return imageService.layerImages(
                 backgroundImageId,
@@ -190,34 +204,39 @@ public class ImageController {
                 xOffset,
                 yOffset
         );
+
+
     }
+
     @PostMapping("/{imageId}/undo")
     public UndoResponse undo(
-            @PathVariable String imageId) {
+            @PathVariable("imageId") String imageId) {
+
 
         return imageService.undo(
-                imageId);
+                imageId
+        );
+
+
     }
 
-    @GetMapping(
-            "/download/{imageId}"
-    )
+    @GetMapping("/download/{imageId}")
     public ResponseEntity<byte[]> downloadImage(
-            @PathVariable String imageId)
+            @PathVariable("imageId") String imageId)
             throws IOException {
 
+
         byte[] imageBytes =
-                imageService.downloadImage(
-                        imageId);
+                imageService.downloadImage(imageId);
 
         return ResponseEntity.ok()
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=image.png")
-                .contentType(
-                        MediaType.IMAGE_PNG)
-                .body(
-                        imageBytes);
+                .contentType(MediaType.IMAGE_PNG)
+                .body(imageBytes);
+
+
     }
 
 }
