@@ -1,0 +1,320 @@
+:root {
+    --primary: #6b8cff;
+    --primary-dark: #5574e8;
+
+    --bg1: #0f172a;
+    --bg2: #16213e;
+
+    --card: rgba(255,255,255,0.08);
+    --card-border: rgba(255,255,255,0.15);
+
+    --text: #edf2ff;
+    --muted: rgba(237,242,255,0.65);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    font-family: "Segoe UI", sans-serif;
+
+    background:
+            radial-gradient(circle at top,
+            var(--bg2),
+            var(--bg1));
+
+    color: var(--text);
+}
+
+/* ================= APP ================= */
+
+.app {
+    max-width: 1700px;
+    margin: auto;
+    padding: 30px;
+}
+
+.app h1 {
+    text-align: center;
+    font-size: 3rem;
+    margin-bottom: 25px;
+}
+
+/* ================= UPLOAD ================= */
+
+.upload-section {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+
+    backdrop-filter: blur(16px);
+
+    padding: 20px;
+    border-radius: 18px;
+
+    margin-bottom: 24px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+/* ================= MAIN LAYOUT ================= */
+
+.main-container {
+    display: flex;
+    gap: 22px;
+    align-items: flex-start;
+}
+
+/* ================= LEFT PANEL ================= */
+
+.left-panel {
+    flex: 1;
+
+    background: var(--card);
+    border: 1px solid var(--card-border);
+
+    backdrop-filter: blur(18px);
+
+    border-radius: 20px;
+    padding: 24px;
+
+    overflow: auto;
+
+    max-height: calc(100vh - 40px);
+}
+
+.left-panel h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+/* ================= IMAGE PREVIEW ================= */
+
+.preview-image {
+    width: auto;
+    max-width: none;
+    height: auto;
+
+    display: block;
+    border-radius: 14px;
+}
+
+.preview-placeholder {
+    height: 600px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: var(--muted);
+    font-size: 18px;
+}
+
+/* ================= RIGHT PANEL ================= */
+
+.right-panel {
+    width: 420px;
+    flex-shrink: 0;
+
+    background: var(--card);
+    border: 1px solid var(--card-border);
+
+    backdrop-filter: blur(18px);
+
+    border-radius: 20px;
+    padding: 20px;
+
+    position: sticky;
+    top: 20px;
+
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+.right-panel h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+/* ================= CONTROLS ================= */
+
+.controls-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.control-section {
+    background: rgba(255,255,255,0.05);
+
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+
+    padding: 14px;
+
+    transition: all 0.25s ease;
+}
+
+.control-section:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-2px);
+}
+
+/* ================= HEADER ================= */
+
+.control-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 10px;
+
+    font-weight: 600;
+}
+
+.control-label {
+    color: var(--text);
+}
+
+.control-value {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* ================= SLIDER ================= */
+
+.slider {
+    width: 100%;
+    appearance: none;
+
+    height: 6px;
+    border-radius: 999px;
+
+    background: rgba(255,255,255,0.15);
+}
+
+.slider::-webkit-slider-thumb {
+    appearance: none;
+
+    width: 18px;
+    height: 18px;
+
+    border-radius: 50%;
+    background: var(--primary);
+
+    cursor: pointer;
+}
+
+/* ================= BUTTONS ================= */
+
+button {
+    border: none;
+    border-radius: 12px;
+
+    padding: 10px 16px;
+
+    background: var(--primary);
+    color: white;
+
+    font-weight: 600;
+    cursor: pointer;
+
+    transition: all 0.25s ease;
+}
+
+button:hover {
+    background: var(--primary-dark);
+}
+
+/* ================= ACTION BUTTONS ================= */
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+
+    margin-top: 15px;
+}
+
+.action-buttons button {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--card-border);
+}
+
+.action-buttons button:hover {
+    background: rgba(107,140,255,0.18);
+}
+
+/* ================= INPUTS ================= */
+
+select,
+input[type="number"],
+input[type="text"] {
+    width: 100%;
+
+    padding: 10px;
+
+    border-radius: 10px;
+
+    border: 1px solid var(--card-border);
+
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+}
+
+/* ================= SCROLLBAR ================= */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.25);
+    border-radius: 20px;
+}
+
+/* ================= SHAPE RESULT ================= */
+
+.shape-result {
+    margin-top: 15px;
+    padding: 12px;
+
+    border-radius: 12px;
+
+    background: rgba(79,124,255,0.15);
+
+    font-weight: 600;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 1100px) {
+
+    .main-container {
+        flex-direction: column;
+    }
+
+    .right-panel {
+        width: 100%;
+        position: static;
+        max-height: none;
+    }
+
+    .left-panel {
+        max-height: none;
+    }
+
+    .preview-image {
+        width: 100%;
+        max-width: 100%;
+    }
+}
