@@ -3,6 +3,7 @@ package com.imageprocessing.controller;
 import com.imageprocessing.dto.*;
 import com.imageprocessing.service.ImageService;
 import com.imageprocessing.service.ImageStore;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
+@CrossOrigin(origins = "http://localhost:5173")
+
 
 @RestController
 @RequestMapping("/api")
@@ -61,16 +64,25 @@ public class ImageController {
         BufferedImage image =
                 imageStore.get(imageId);
 
+        if (image == null) {
+
+            throw new RuntimeException(
+                    "Image not found: " + imageId);
+        }
+
         ByteArrayOutputStream baos =
                 new ByteArrayOutputStream();
 
-        ImageIO.write(image, "png", baos);
-        System.out.println(
-                "Retrieved image: " + imageId);
+        ImageIO.write(
+                image,
+                "png",
+                baos);
 
         return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_PNG)
-                .body(baos.toByteArray());
+                .contentType(
+                        MediaType.IMAGE_PNG)
+                .body(
+                        baos.toByteArray());
     }
 
     @PostMapping("/{imageId}/contrast")
@@ -167,17 +179,45 @@ public class ImageController {
     @PostMapping("/layer")
     public LayerResponse layerImages(
             @RequestParam String backgroundImageId,
-            @RequestParam String foregroundImageId,
+            @RequestParam MultipartFile foregroundFile,
             @RequestParam int xOffset,
-            @RequestParam int yOffset) {
+            @RequestParam int yOffset)
+            throws IOException {
 
         return imageService.layerImages(
                 backgroundImageId,
-                foregroundImageId,
+                foregroundFile,
                 xOffset,
                 yOffset
         );
     }
+    @PostMapping("/{imageId}/undo")
+    public UndoResponse undo(
+            @PathVariable String imageId) {
 
+        return imageService.undo(
+                imageId);
+    }
+
+    @GetMapping(
+            "/download/{imageId}"
+    )
+    public ResponseEntity<byte[]> downloadImage(
+            @PathVariable String imageId)
+            throws IOException {
+
+        byte[] imageBytes =
+                imageService.downloadImage(
+                        imageId);
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=image.png")
+                .contentType(
+                        MediaType.IMAGE_PNG)
+                .body(
+                        imageBytes);
+    }
 
 }

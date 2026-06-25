@@ -10,6 +10,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+import javax.imageio.ImageIO;
+import java.io.ByteArrayOutputStream;
+
+import java.awt.Graphics2D;
+import java.awt.AlphaComposite;
+import java.awt.image.BufferedImage;
 
 @Service
 public class ImageServiceImpl implements ImageService {
@@ -981,27 +987,22 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public LayerResponse layerImages(
             String backgroundImageId,
-            String foregroundImageId,
+            MultipartFile foregroundFile,
             int xOffset,
-            int yOffset) {
+            int yOffset)
+            throws IOException {
 
         BufferedImage background =
-                imageStore.get(
-                        backgroundImageId);
-
-        BufferedImage foreground =
-                imageStore.get(
-                        foregroundImageId);
+                imageStore.get(backgroundImageId);
 
         if (background == null) {
             throw new RuntimeException(
                     "Background image not found");
         }
 
-        if (foreground == null) {
-            throw new RuntimeException(
-                    "Foreground image not found");
-        }
+        BufferedImage foreground =
+                ImageIO.read(
+                        foregroundFile.getInputStream());
 
         int width =
                 background.getWidth();
@@ -1015,60 +1016,31 @@ public class ImageServiceImpl implements ImageService {
                         height,
                         BufferedImage.TYPE_INT_ARGB);
 
-        for (int y = 0;
-             y < height;
-             y++) {
+        Graphics2D g =
+                result.createGraphics();
 
-            for (int x = 0;
-                 x < width;
-                 x++) {
+        // draw background
+        g.drawImage(
+                background,
+                0,
+                0,
+                null);
 
-                result.setRGB(
-                        x,
-                        y,
-                        background.getRGB(
-                                x,
-                                y));
-            }
-        }
+        // 50% transparency
+        g.setComposite(
+                AlphaComposite.getInstance(
+                        AlphaComposite.SRC_OVER,
+                        0.5f
+                ));
 
-        for (int y = 0;
-             y < foreground.getHeight();
-             y++) {
+        // draw foreground
+        g.drawImage(
+                foreground,
+                xOffset,
+                yOffset,
+                null);
 
-            for (int x = 0;
-                 x < foreground.getWidth();
-                 x++) {
-
-                int targetX =
-                        x + xOffset;
-
-                int targetY =
-                        y + yOffset;
-
-                if (targetX >= 0 &&
-                        targetX < width &&
-                        targetY >= 0 &&
-                        targetY < height) {
-
-                    int rgb =
-                            foreground.getRGB(
-                                    x,
-                                    y);
-
-                    int alpha =
-                            (rgb >> 24) & 0xFF;
-
-                    if (alpha > 0) {
-
-                        result.setRGB(
-                                targetX,
-                                targetY,
-                                rgb);
-                    }
-                }
-            }
-        }
+        g.dispose();
 
         String newImageId =
                 imageStore.saveProcessedImage(
@@ -1077,10 +1049,60 @@ public class ImageServiceImpl implements ImageService {
 
         return new LayerResponse(
                 newImageId,
-                width,
-                height,
+                result.getWidth(),
+                result.getHeight(),
                 "Images layered successfully"
         );
+    }
+
+    @Override
+    public UndoResponse undo(
+            String imageId) {
+
+        String parentImageId =
+                imageStore.getParentImageId(
+                        imageId);
+
+        if (parentImageId == null) {
+
+            throw new RuntimeException(
+                    "No previous version available");
+        }
+
+        BufferedImage image =
+                imageStore.get(
+                        parentImageId);
+
+        return new UndoResponse(
+                parentImageId,
+                image.getWidth(),
+                image.getHeight(),
+                "Undo successful"
+        );
+    }
+
+    @Override
+    public byte[] downloadImage(
+            String imageId)
+            throws IOException {
+
+        BufferedImage image =
+                imageStore.get(imageId);
+
+        if (image == null) {
+            throw new RuntimeException(
+                    "Image not found");
+        }
+
+        ByteArrayOutputStream outputStream =
+                new ByteArrayOutputStream();
+
+        ImageIO.write(
+                image,
+                "png",
+                outputStream);
+
+        return outputStream.toByteArray();
     }
 
 }

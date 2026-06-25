@@ -53,9 +53,18 @@ public interface ImageService {
 
     LayerResponse layerImages(
             String backgroundImageId,
-            String foregroundImageId,
+            MultipartFile foregroundFile,
             int xOffset,
-            int yOffset);
+            int yOffset)
+            throws IOException;
+
+    UndoResponse undo(
+            String imageId
+    );
+
+    byte[] downloadImage(
+            String imageId)
+            throws IOException;
 
 
 }

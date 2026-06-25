@@ -44,13 +44,10 @@ public class ImageStore {
                 newImageId,
                 parentImageId);
 
+        System.out.println(
+                "Saved image = " + newImageId);
+
         return newImageId;
-    }
-
-    public BufferedImage get(
-            String imageId) {
-
-        return images.get(imageId);
     }
 
     public String getParentImageId(
@@ -58,6 +55,16 @@ public class ImageStore {
 
         return parentImages.get(imageId);
     }
+
+    public BufferedImage get(
+            String imageId) {
+
+        System.out.println(
+                "Fetching image = " + imageId);
+
+        return images.get(imageId);
+    }
+
 
     public void delete(
             String imageId) {
