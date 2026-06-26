@@ -1,89 +1,87 @@
 import { useState } from "react";
 
-import UploadImage
-    from "./components/UploadImage";
+import UploadImage from "./components/UploadImage";
+import ImageViewer from "./components/ImageViewer";
+import ImageControls from "./components/ImageControls";
 
-import ImageViewer
-    from "./components/ImageViewer";
-
-import { uploadImage }
-    from "./services/imageService";
+import { uploadImage } from "./services/imageService";
 
 import "./styles/App.css";
 
-import ImageControls
-    from "./components/ImageControls";
-
 function App() {
 
-    const [imageId,
-        setImageId] =
-        useState("");
+    const [originalImageId, setOriginalImageId] = useState("");
+    const [processedImageId, setProcessedImageId] = useState("");
 
-    const handleUpload =
-        async (file) => {
+    const handleUpload = async (file) => {
 
-            try {
+        try {
 
-                const response =
-                    await uploadImage(
-                        file
-                    );
+            const response = await uploadImage(file);
 
-                console.log(
-                    response
-                );
+            console.log(response);
 
-                setImageId(
-                    response.imageId
-                );
+            // Save uploaded image as both original and processed
+            setOriginalImageId(response.imageId);
+            setProcessedImageId(response.imageId);
 
-            } catch (error) {
+        } catch (error) {
 
-                console.error(
-                    error
-                );
-            }
-        };
+            console.error(error);
+
+        }
+    };
 
     return (
-    <div className="app">
 
-        <h1>
-            Image Processing System
-        </h1>
+        <div className="app">
 
-        <UploadImage
-            onUpload={handleUpload}
-        />
+            <h1>Image Processing System</h1>
 
-        <div className="main-container">
+            <UploadImage onUpload={handleUpload} />
 
-            <div className="left-panel">
+            <div className="main-container">
 
-                <h2>
-                    Image Preview
-                </h2>
+                {/* Image Comparison */}
+                <div className="left-panel">
 
-                <ImageViewer
-                    imageId={imageId}
-                />
+                    <div className="image-comparison">
 
-            </div>
+                        <div className="image-box">
 
-            <div className="right-panel">
+                            <h3>Original Image</h3>
 
-                <ImageControls
-                    imageId={imageId}
-                    onProcessed={setImageId}
-                />
+                            <ImageViewer imageId={originalImageId} />
+
+                        </div>
+
+                        <div className="image-box">
+
+                            <h3>Processed Image</h3>
+
+                            <ImageViewer imageId={processedImageId} />
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {/* Controls */}
+                <div className="right-panel">
+
+                    <ImageControls
+                        imageId={processedImageId}
+                        onProcessed={setProcessedImageId}
+                    />
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
-);
+    );
 }
 
 export default App;
